@@ -55,9 +55,9 @@ function [ mpc, info ] = tighten_bounds( mpc, options)
 %            stored in the corresponding columns of mpc.branch matrix. If 
 %            bounds on voltage magnitude differences were tightened, extra 
 %            field is added to structure:
-%    .Vbounds         - it is itself a structure with the following fields:
-%       .min                lower bound on Vi-Vj
-%       .max                upper bound on Vi-Vj
+%    .Vdif         - it is itself a structure with the following fields:
+%       .min                lower bound on Vi-Vj for all branches
+%       .max                upper bound on Vi-Vj for all branches
 %       .extra (optional)   stores parameters of constraints of the form
 %                           |Vj-slope*Vi|<offset, which are obtained from
 %                           the feasible set of thermal limit constraint
@@ -247,7 +247,7 @@ if (isfield(Vdif,'extra'))
         deal(Vdif.extra.slope1,Vdif.extra.offset1,Vdif.extra.slope2,Vdif.extra.offset2);
     Vbounds.extra=extra;
 end
-mpc.Vbounds=Vbounds;
+mpc.Vdif=Vbounds;
 %order fields for convenience
 if (~isempty(info))
     info=orderfields(info);

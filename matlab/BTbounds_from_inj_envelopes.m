@@ -51,7 +51,7 @@ V_imag_min=cell(N,1);
 V_imag_max=cell(N,1);
 
 %loop over all nodes
-for i=1:N
+parfor i=1:N
     %get the list of buses that bus i is connected to
     N_adj=n_adj_buses(i);
     buses=adj_buses{i};

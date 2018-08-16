@@ -92,7 +92,7 @@ to pass the non-default options, the rest are initizialed to their default value
 
 #### Test system
 Structure in MATPOWER format. If bounds on angle differences were tightened, the updated values are put in the corresponding columns of 'branch' field. 
-If bounds on voltage magnitude differences were tightened, extra field 'Vbounds' is added to MATPOWER structure. It stores lower and upper bounds on
+If bounds on voltage magnitude differences were tightened, extra field 'Vdif' is added to MATPOWER structure. It stores lower and upper bounds on
 voltage differences as well as parameters of constraint of type |Vj-slope*Vi|<offset obtained from the properties of the feasible set of the corresponding 
 thermal limit constraint.
 
