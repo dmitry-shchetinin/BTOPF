@@ -6,8 +6,8 @@ buses_out=mpc.bus(mpc.bus(:,2)==4,1);
 if isempty(buses_out)
     buses_out=-inf;
 end
-branches_out=mpc.branch(:,11)==0 | ismember(buses_out,mpc.branch(:,1)) | ...
-    ismember(buses_out,mpc.branch(:,2));
+branches_out=mpc.branch(:,11)==0 | ismember(mpc.branch(:,1),buses_out) | ...
+    ismember(mpc.branch(:,2),buses_out);
 mpc.gen(ismember(buses_out,mpc.gen(:,1)) | mpc.gen(:,8)<=0,:) = [];   
 mpc.bus(mpc.bus(:,2)==4,:)=[];
 mpc.branch(branches_out,:)=[];
@@ -37,6 +37,8 @@ branch=struct('g',real(y_temp),'b',imag(y_temp),'ratio',mpc.branch(:,9),...
 branch.ratio(branch.ratio==0)=1;
 branch.theta_min(branch.theta_min<-pi/2)=-pi/2; %fix big angles at steady-state limit
 branch.theta_max(branch.theta_max>pi/2)=pi/2; %fix big angles at steady-state limit
+branch.theta_min(branch.theta_min==0)=-pi/2; %fix zero angles at steady-state limit
+branch.theta_max(branch.theta_max==0)=pi/2; %fix zero angles at steady-state limit
 branch.nbranch=size(mpc.branch,1);
 branch.Vdif=mpc.bus(branch.ind_bus_F,8)-mpc.bus(branch.ind_bus_T,8);
 branch.theta=(mpc.bus(branch.ind_bus_F,9)-mpc.bus(branch.ind_bus_T,9))*pi/180;
