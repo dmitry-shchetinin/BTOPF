@@ -8,7 +8,7 @@ if isempty(buses_out)
 end
 branches_out=mpc.branch(:,11)==0 | ismember(mpc.branch(:,1),buses_out) | ...
     ismember(mpc.branch(:,2),buses_out);
-mpc.gen(ismember(buses_out,mpc.gen(:,1)) | mpc.gen(:,8)<=0,:) = [];   
+mpc.gen(ismember(mpc.gen(:,1),buses_out) | mpc.gen(:,8)<=0,:) = [];   
 mpc.bus(mpc.bus(:,2)==4,:)=[];
 mpc.branch(branches_out,:)=[];
 
