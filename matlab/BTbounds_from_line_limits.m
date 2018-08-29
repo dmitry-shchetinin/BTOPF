@@ -10,7 +10,7 @@ L=numel(branch.g);
 theta=struct('min',-pi*ones(L,1)/2,'max',pi*ones(L,1)/2);
 Vdif=struct('min',bus.Vmin(branch.ind_bus_F)-bus.Vmax(branch.ind_bus_T),...
         'max',bus.Vmax(branch.ind_bus_F)-bus.Vmin(branch.ind_bus_T));
-extra=struct('slope1',ones(L,1),'offset1',abs(Vdif.min),'slope2',ones(L,1),'offset2',abs(Vdif.max));
+extra=struct('slope1',zeros(L,1),'offset1',zeros(L,1),'slope2',zeros(L,1),'offset2',zeros(L,1));
 
 
 %iterate over all branches

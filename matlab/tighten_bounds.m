@@ -61,6 +61,23 @@ function [ mpc, info ] = tighten_bounds( mpc, options)
 %       .extra (optional)   stores parameters of constraints of the form
 %                           |Vj-slope*Vi|<offset, which are obtained from
 %                           the feasible set of thermal limit constraint
+%            In addition, information on voltage magnitudes differences is
+%            added to columns of matrix mpc.branch. Column indices and the
+%            corresponding information stored in them is as follows:
+%       22     - lower bound on Vi-Vj for all branches
+%       23     - upper bound on Vi-Vj for all branches
+%       24     - value of slope in |Vj-slope*Vi|<offset for thermal limit
+%                constraint at the beginning of the line. If thermal limit 
+%                value is not given, slope=0.
+%       25     - value of offset in |Vj-slope*Vi|<offset for thermal limit
+%                constraint at the beginning of the line. If thermal limit 
+%                value is not given, offset=0.
+%       26     - value of slope in |Vj-slope*Vi|<offset for thermal limit
+%                constraint at the end of the line. If thermal limit value 
+%                is not given, slope=0.
+%       27     - value of offset in |Vj-slope*Vi|<offset for thermal limit
+%                constraint at the end of the line. If thermal limit value 
+%                is not given, offset=0.
 %  info    - optional output containing statistical information about the
 %            tightening results. If options.statistics==1, the following
 %            fields in structure info are present:
@@ -144,9 +161,12 @@ if (options.method==1 || options.method==2)
     %update bounds
     branch.theta_min=max(branch.theta_min,theta_thermal.min);
     branch.theta_max=min(branch.theta_max,theta_thermal.max);
-    Vdif.min=max(Vdif.min,Vdif_thermal.min);
-    Vdif.max=min(Vdif.max,Vdif_thermal.max);
-    Vdif.extra=Vdif_thermal.extra;
+    if (options.bounds~=1)
+        %record voltage difference info only if required
+        Vdif.min=max(Vdif.min,Vdif_thermal.min);
+        Vdif.max=min(Vdif.max,Vdif_thermal.max);
+        Vdif.extra=Vdif_thermal.extra;
+    end
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_thermal, info.viol_theta_thermal ] = BTcollect_statistics( theta_initial, ...
@@ -231,10 +251,10 @@ end
 
 
 %% save results
-%angles
+%angle differences
 mpc.branch(branch.in_service,12)=branch.theta_min*180/pi;
 mpc.branch(branch.in_service,13)=branch.theta_max*180/pi;
-%voltages
+%voltage differences
 Vbounds=struct('min',-inf(size(mpc.branch,1),1),'max',inf(size(mpc.branch,1),1));
 Vbounds.max(branch.in_service)=Vdif.max;
 Vbounds.min(branch.in_service)=Vdif.min;
@@ -248,6 +268,15 @@ if (isfield(Vdif,'extra'))
     Vbounds.extra=extra;
 end
 mpc.Vdif=Vbounds;
+%add voltage differences to mpc.branch
+temp=zeros(size(mpc.branch,1),27);
+temp(:,1:size(mpc.branch,2))=mpc.branch;
+temp(branch.in_service,22:23)=[Vbounds.min, Vbounds.max];
+if (isfield(Vdif,'extra'))
+    temp(branch.in_service,24:27)=[Vdif.extra.slope1,Vdif.extra.offset1,Vdif.extra.slope2,Vdif.extra.offset2];
+end
+mpc.branch=temp;
+
 %order fields for convenience
 if (~isempty(info))
     info=orderfields(info);

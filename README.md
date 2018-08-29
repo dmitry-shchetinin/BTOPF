@@ -94,7 +94,7 @@ to pass the non-default options, the rest are initizialed to their default value
 Structure in MATPOWER format. If bounds on angle differences were tightened, the updated values are put in the corresponding columns of 'branch' field. 
 If bounds on voltage magnitude differences were tightened, extra field 'Vdif' is added to MATPOWER structure. It stores lower and upper bounds on
 voltage differences as well as parameters of constraint of type |Vj-slope*Vi|<offset obtained from the properties of the feasible set of the corresponding 
-thermal limit constraint.
+thermal limit constraint. In addition, information related to voltage magnitude differences is stored in columns 22-27 of 'branch' field of the MATPOWER structure. 
 
 #### Statistical information (optional)
 Structure containing statistical information about the BT results, e.g. the computation time, percentage of tightened bounds, distance between the bounds etc.
