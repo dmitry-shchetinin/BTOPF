@@ -150,7 +150,7 @@ theta_initial=struct('min',branch.theta_min,'max',branch.theta_max);
 Vdif_initial=struct('min',bus.Vmin(branch.ind_bus_F)-bus.Vmax(branch.ind_bus_T),...
         'max',bus.Vmax(branch.ind_bus_F)-bus.Vmin(branch.ind_bus_T));
 Vdif=Vdif_initial;
-time=struct('flow_env',0,'inj_env',0,'thermal',0,'total',0);
+time=struct('flow_env',0,'inj_env',0,'thermal',0,'Vdif',0,'total',0);
 
 
 %% tighten bounds based on feasible set of line flow constraints
@@ -219,7 +219,7 @@ if ((options.method==1 || options.method==3) && options.bounds~=1)
     temp_bound=Vdif;
     tic;
     [ Vdif_flow, ~ ] = BTbounds_from_flow_envelopes( bus, branch, options, 0 );
-    time.flow_env=time.flow_env+toc;
+    time.Vdif=toc;
     %update bounds
     Vdif.min=max(Vdif_flow.min,Vdif.min);
     Vdif.max=min(Vdif_flow.max,Vdif.max);
@@ -234,7 +234,7 @@ end
 
 
 %% record relevant statistics
-time.total=time.flow_env+time.inj_env+time.thermal;
+time.total=time.flow_env+time.inj_env+time.thermal+time.Vdif;
 if (options.statistics==1)
     [ info.stat_theta_all, ~ ] = BTcollect_statistics( theta_initial, ...
         struct('min',branch.theta_min,'max',branch.theta_max), [], 1, 0);
@@ -271,9 +271,9 @@ mpc.Vdif=Vbounds;
 %add voltage differences to mpc.branch
 temp=zeros(size(mpc.branch,1),27);
 temp(:,1:size(mpc.branch,2))=mpc.branch;
-temp(branch.in_service,22:23)=[Vbounds.min, Vbounds.max];
+temp(:,22:23)=[Vbounds.min, Vbounds.max];
 if (isfield(Vdif,'extra'))
-    temp(branch.in_service,24:27)=[Vdif.extra.slope1,Vdif.extra.offset1,Vdif.extra.slope2,Vdif.extra.offset2];
+    temp(:,24:27)=[extra.slope1,extra.offset1,extra.slope2,extra.offset2];
 end
 mpc.branch=temp;
 
