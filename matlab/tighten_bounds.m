@@ -21,6 +21,9 @@ function [ mpc, info ] = tighten_bounds( mpc, options)
 %                           3 - based on envelopes of power flows
 %                           4 - based on envelopes of bus injections (only 
 %                               applicable for tightening angle bounds)
+%    .Vdif_type      (1)   type of voltage difference bounds to tighten:
+%                           1 - difference of voltage magnitudes
+%                           2 - difference of squares of voltage magnitudes
 %    .linsolver      (1)   linear solver to use:
 %                           1 - default Matlab LU
 %                           2 - KLU from SuiteSparse (installed separately)
