@@ -1,6 +1,6 @@
 function [ lb, ub ] = BTpostprocess_bounds( lb, ub, uniq )
 %when there is more than one branch between two buses, finds the tightest
-%bounds from distributes them to all parallel branches
+%bounds and distribute them to all parallel branches
 
 %number of unique connections
 L_uniq=uniq.L_uniq;

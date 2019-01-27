@@ -20,6 +20,13 @@ elseif (opt.method==4 && opt.bounds==2)
     opt.method=1;
 end
 
+%% type of voltage differences to tighten
+opt=add_field(opt,'Vdif_type', 1);
+if (opt.Vdif_type~=1 && opt.Vdif_type~=2)
+    warning('Value of field "Vdif_type" must be 1 or 2. Changing it to default value of 1.')
+    opt.Vdif_type=1;
+end
+
 %% linear solver to use
 opt=add_field(opt,'linsolver', 1);
 if (opt.linsolver~=1 && opt.linsolver~=2)

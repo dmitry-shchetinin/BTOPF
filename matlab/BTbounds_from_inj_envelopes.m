@@ -20,8 +20,8 @@ Vmax=bus.Vmax(ordering);
 Ybus=bus.Ybus(ordering,ordering);
 
 %get bounds on angles for unique connections
-theta_min=branch.theta_min(uniq.full_to_uniq);
-theta_max=branch.theta_max(uniq.full_to_uniq);
+theta_min=branch.theta.min(uniq.full_to_uniq);
+theta_max=branch.theta.max(uniq.full_to_uniq);
 
 %for each bus, record some info about adjacent buses/branches to enable parfor loop
 adj_Vmin=cell(N,1);

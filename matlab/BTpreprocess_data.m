@@ -30,18 +30,17 @@ bus.nbus=size(mpc.bus,1);
 
 %for branches
 y_temp=1./complex(mpc.branch(:,3),mpc.branch(:,4));
+theta=struct('min',mpc.branch(:,12)*pi/180,'max',mpc.branch(:,13)*pi/180);
 branch=struct('g',real(y_temp),'b',imag(y_temp),'ratio',mpc.branch(:,9),...
     'shift',mpc.branch(:,10)*pi/180,'ind_bus_F',mpc.branch(:,1), ...
     'ind_bus_T',mpc.branch(:,2), 'in_service', find(~branches_out),...
-    'theta_min',mpc.branch(:,12)*pi/180,'theta_max',mpc.branch(:,13)*pi/180);
+    'theta',theta);
 branch.ratio(branch.ratio==0)=1;
-branch.theta_min(branch.theta_min<-pi/2)=-pi/2; %fix big angles at steady-state limit
-branch.theta_max(branch.theta_max>pi/2)=pi/2; %fix big angles at steady-state limit
-branch.theta_min(branch.theta_min==0)=-pi/2; %fix zero angles at steady-state limit
-branch.theta_max(branch.theta_max==0)=pi/2; %fix zero angles at steady-state limit
+branch.theta.min(branch.theta.min<-pi/2 | branch.theta.min==0)=-pi/2; %fix big or zero angles at steady-state limit
+branch.theta.max(branch.theta.max>pi/2 | branch.theta.max==0)=pi/2; %fix big or zero angles at steady-state limit
 branch.nbranch=size(mpc.branch,1);
 branch.Vdif=mpc.bus(branch.ind_bus_F,8)-mpc.bus(branch.ind_bus_T,8);
-branch.theta=(mpc.bus(branch.ind_bus_F,9)-mpc.bus(branch.ind_bus_T,9))*pi/180;
+branch.theta.val=(mpc.bus(branch.ind_bus_F,9)-mpc.bus(branch.ind_bus_T,9))*pi/180;
 
 %get unique connections between buses
 [~,uniq.full_to_uniq,uniq.ind_original]=unique([(branch.ind_bus_F).*(branch.ind_bus_T), ...

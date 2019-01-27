@@ -149,9 +149,10 @@ options=BTcheck_options(options);
 
 
 %% record initial values of bounds
-theta_initial=struct('min',branch.theta_min,'max',branch.theta_max);
-Vdif_initial=struct('min',bus.Vmin(branch.ind_bus_F)-bus.Vmax(branch.ind_bus_T),...
-        'max',bus.Vmax(branch.ind_bus_F)-bus.Vmin(branch.ind_bus_T));
+theta_initial=branch.theta;
+pow=options.Vdif_type;
+Vdif_initial=struct('min',bus.Vmin(branch.ind_bus_F).^pow-bus.Vmax(branch.ind_bus_T).^pow,...
+    'max',bus.Vmax(branch.ind_bus_F).^pow-bus.Vmin(branch.ind_bus_T).^pow);
 Vdif=Vdif_initial;
 time=struct('flow_env',0,'inj_env',0,'thermal',0,'Vdif',0,'total',0);
 
@@ -159,21 +160,19 @@ time=struct('flow_env',0,'inj_env',0,'thermal',0,'Vdif',0,'total',0);
 %% tighten bounds based on feasible set of line flow constraints
 if (options.method==1 || options.method==2)
     tic;
-    [ theta_thermal, Vdif_thermal ] = BTbounds_from_line_limits( bus, branch );
+    [ theta_thermal, Vdif_thermal ] = BTbounds_from_line_limits( bus, branch, options );
     time.thermal=toc;
     %update bounds
-    branch.theta_min=max(branch.theta_min,theta_thermal.min);
-    branch.theta_max=min(branch.theta_max,theta_thermal.max);
+    branch.theta=update_bounds(branch.theta, theta_thermal);
     if (options.bounds~=1)
         %record voltage difference info only if required
-        Vdif.min=max(Vdif.min,Vdif_thermal.min);
-        Vdif.max=min(Vdif.max,Vdif_thermal.max);
+        Vdif=update_bounds(Vdif, Vdif_thermal);
         Vdif.extra=Vdif_thermal.extra;
     end
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_thermal, info.viol_theta_thermal ] = BTcollect_statistics( theta_initial, ...
-            struct('min',branch.theta_min,'max',branch.theta_max), branch.theta, 2, 1);
+            branch.theta, branch.theta.val, 2, 1);
        [ info.stat_Vdif_thermal, info.viol_Vdif_thermal ] = BTcollect_statistics( Vdif_initial, ...
            Vdif, branch.Vdif, 2, 1);
     end
@@ -182,17 +181,16 @@ end
 
 %% tighten bounds based on convex envelopes of bus injections
 if ((options.method==1 || options.method==4) && options.bounds~=2)
-    temp_bound=struct('min',branch.theta_min,'max',branch.theta_max);
+    temp_bound=branch.theta;
     tic;
     theta_inj = BTbounds_from_inj_envelopes( bus, branch, options );
     time.inj_env=toc;
     %update bounds
-    branch.theta_min=max(branch.theta_min,theta_inj.min);
-    branch.theta_max=min(branch.theta_max,theta_inj.max);
+    branch.theta=update_bounds(branch.theta, theta_inj);
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_inj, info.viol_theta_inj ] = BTcollect_statistics( temp_bound, ...
-            struct('min',branch.theta_min,'max',branch.theta_max), branch.theta, 2, 1);
+            branch.theta, branch.theta.val, 2, 1);
     end
 end
 
@@ -200,17 +198,16 @@ end
 
 %% tighten angle bounds based on convex envelopes of power flows
 if ((options.method==1 || options.method==3) && options.bounds~=2)
-    temp_bound=struct('min',branch.theta_min,'max',branch.theta_max);
+    temp_bound=branch.theta;
     tic;
     [ theta_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, options, 1 );
     time.flow_env=toc;
     %update bounds
-    branch.theta_min=max(branch.theta_min,theta_flow.min);
-    branch.theta_max=min(branch.theta_max,theta_flow.max);
+    branch.theta=update_bounds(branch.theta, theta_flow);
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_flow, info.viol_theta_flow ] = BTcollect_statistics( temp_bound, ...
-            struct('min',branch.theta_min,'max',branch.theta_max), branch.theta, 2, 1);
+            branch.theta, branch.theta.val, 2, 1);
         info.stat_theta_flow_detailed=stat_iter;
     end
 end
@@ -224,8 +221,7 @@ if ((options.method==1 || options.method==3) && options.bounds~=1)
     [ Vdif_flow, ~ ] = BTbounds_from_flow_envelopes( bus, branch, options, 0 );
     time.Vdif=toc;
     %update bounds
-    Vdif.min=max(Vdif_flow.min,Vdif.min);
-    Vdif.max=min(Vdif_flow.max,Vdif.max);
+    Vdif=update_bounds(Vdif, Vdif_flow);
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_bound, ...
@@ -240,12 +236,12 @@ end
 time.total=time.flow_env+time.inj_env+time.thermal+time.Vdif;
 if (options.statistics==1)
     [ info.stat_theta_all, ~ ] = BTcollect_statistics( theta_initial, ...
-        struct('min',branch.theta_min,'max',branch.theta_max), [], 1, 0);
+        branch.theta, [], 1, 0);
     [ info.stat_Vdif_all, ~ ] = BTcollect_statistics( Vdif_initial, Vdif, [], 1, 0);
     info.time=time.total;
 elseif (options.statistics==2)
     [ info.stat_theta_all, info.viol_theta_all ] = BTcollect_statistics( theta_initial, ...
-        struct('min',branch.theta_min,'max',branch.theta_max), branch.theta, 2, 1);
+        branch.theta, branch.theta.val, 2, 1);
     [ info.stat_Vdif_all, info.viol_Vdif_all ] = BTcollect_statistics( Vdif_initial, ...
         Vdif, branch.Vdif, 2, 1);
     info.time=time;
@@ -255,8 +251,8 @@ end
 
 %% save results
 %angle differences
-mpc.branch(branch.in_service,12)=branch.theta_min*180/pi;
-mpc.branch(branch.in_service,13)=branch.theta_max*180/pi;
+mpc.branch(branch.in_service,12)=branch.theta.min*180/pi;
+mpc.branch(branch.in_service,13)=branch.theta.max*180/pi;
 %voltage differences
 Vbounds=struct('min',-inf(size(mpc.branch,1),1),'max',inf(size(mpc.branch,1),1));
 Vbounds.max(branch.in_service)=Vdif.max;
@@ -285,6 +281,13 @@ if (~isempty(info))
     info=orderfields(info);
 end
 
+end
+
+
+%update bounds tih tighter ones
+function bounds=update_bounds(bounds, bounds_temp)
+    bounds.min=max(bounds_temp.min,bounds.min);
+    bounds.max=min(bounds_temp.max,bounds.max);
 end
 
 

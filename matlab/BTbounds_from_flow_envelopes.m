@@ -5,7 +5,7 @@ function [ bounds, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, opt,
 %envelopes.
    
 %record initial values of angle differences
-theta=struct('min',branch.theta_min,'max',branch.theta_max);
+theta=branch.theta;
 stat_iter=[];
 
 %adjust parameters depending on what type of bounds is tightened

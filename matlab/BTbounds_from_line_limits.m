@@ -1,4 +1,4 @@
-function [ theta, Vdif ] = BTbounds_from_line_limits( bus, branch )
+function [ theta, Vdif ] = BTbounds_from_line_limits( bus, branch, opt )
 %Returns bounds on angle and voltage differences for all lines based on the
 %feasible set of thermal limit constraints. If a line does not have a
 %thermal limit constraint (modeled as branch.I_max=0), the limits on phase
@@ -56,6 +56,16 @@ end
 
 %% record all obtained voltage constraints
 Vdif.extra=extra;
+
+%% obtain differences of squares of voltage magnitudes if need be
+if (opt.Vdif_type==2)
+    ind_temp=Vdif.min<0;
+    Vdif.min(ind_temp)=Vdif.min(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
+    Vdif.min(~ind_temp)=Vdif.min(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
+    ind_temp=Vdif.max>0;
+    Vdif.max(ind_temp)=Vdif.max(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
+    Vdif.max(~ind_temp)=Vdif.max(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
+end
 
 %% postprocess bounds (to store tightest bounds for all parallel branches)
 [ theta.min, theta.max ] = BTpostprocess_bounds( theta.min, theta.max, branch.uniq );
