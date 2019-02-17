@@ -8,8 +8,9 @@ function [ theta, Vdif ] = BTbounds_from_line_limits( bus, branch, opt )
 %% initialize output structures
 L=numel(branch.g);
 theta=struct('min',-pi*ones(L,1)/2,'max',pi*ones(L,1)/2);
-Vdif=struct('min',bus.Vmin(branch.ind_bus_F)-bus.Vmax(branch.ind_bus_T),...
-        'max',bus.Vmax(branch.ind_bus_F)-bus.Vmin(branch.ind_bus_T));
+pow=opt.Vdif_type;
+Vdif=struct('min',bus.Vmin(branch.ind_bus_F).^pow-bus.Vmax(branch.ind_bus_T).^pow,...
+    'max',bus.Vmax(branch.ind_bus_F).^pow-bus.Vmin(branch.ind_bus_T).^pow);
 extra=struct('slope1',zeros(L,1),'offset1',zeros(L,1),'slope2',zeros(L,1),'offset2',zeros(L,1));
 
 
@@ -62,7 +63,7 @@ if (opt.Vdif_type==2)
     ind_temp=Vdif.min<0;
     Vdif.min(ind_temp)=Vdif.min(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
     Vdif.min(~ind_temp)=Vdif.min(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
-    ind_temp=Vdif.max>0;
+    ind_temp=Vdif.max>=0;
     Vdif.max(ind_temp)=Vdif.max(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
     Vdif.max(~ind_temp)=Vdif.max(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
 end

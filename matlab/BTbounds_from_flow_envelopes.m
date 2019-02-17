@@ -16,10 +16,11 @@ if (tighten_angle)
 else
     max_iter=1;
     eps_tol=inf;
-    bounds=struct('min',bus.Vmin(branch.ind_bus_F)-bus.Vmax(branch.ind_bus_T),...
-        'max',bus.Vmax(branch.ind_bus_F)-bus.Vmin(branch.ind_bus_T));
+    pow=opt.Vdif_type;
+    bounds=struct('min',bus.Vmin(branch.ind_bus_F).^pow-bus.Vmax(branch.ind_bus_T).^pow,...
+        'max',bus.Vmax(branch.ind_bus_F).^pow-bus.Vmin(branch.ind_bus_T).^pow);
 end
-    
+
 %start iterative process of tightening bounds
 iter=1;
 while iter<=max_iter
