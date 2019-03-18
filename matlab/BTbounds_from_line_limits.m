@@ -59,7 +59,7 @@ end
 Vdif.extra=extra;
 
 %% obtain differences of squares of voltage magnitudes if need be
-if (opt.Vdif_type==2)
+if (pow==2)
     ind_temp=Vdif.min<0;
     Vdif.min(ind_temp)=Vdif.min(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
     Vdif.min(~ind_temp)=Vdif.min(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
