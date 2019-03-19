@@ -163,10 +163,10 @@ if (options.method==1 || options.method==2)
     [ theta_thermal, Vdif_thermal ] = BTbounds_from_line_limits( bus, branch, options );
     time.thermal=toc;
     %update bounds
-    branch.theta=update_bounds(branch.theta, theta_thermal);
+    branch.theta=BTupdate_bounds(branch.theta, theta_thermal);
     if (options.bounds~=1)
         %record voltage difference info only if required
-        Vdif=update_bounds(Vdif, Vdif_thermal);
+        Vdif=BTupdate_bounds(Vdif, Vdif_thermal);
         Vdif.extra=Vdif_thermal.extra;
     end
     %collect detailed statistics if need be
@@ -186,7 +186,7 @@ if ((options.method==1 || options.method==4) && options.bounds~=2)
     theta_inj = BTbounds_from_inj_envelopes( bus, branch, options );
     time.inj_env=toc;
     %update bounds
-    branch.theta=update_bounds(branch.theta, theta_inj);
+    branch.theta=BTupdate_bounds(branch.theta, theta_inj);
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_inj, info.viol_theta_inj ] = BTcollect_statistics( temp_bound, ...
@@ -200,10 +200,10 @@ end
 if ((options.method==1 || options.method==3) && options.bounds~=2)
     temp_bound=branch.theta;
     tic;
-    [ theta_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, options, 1 );
+    [ theta_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, options, Vdif, 1 );
     time.flow_env=toc;
     %update bounds
-    branch.theta=update_bounds(branch.theta, theta_flow);
+    branch.theta=BTupdate_bounds(branch.theta, theta_flow);
     %collect detailed statistics if need be
     if (options.statistics==2)
         [ info.stat_theta_flow, info.viol_theta_flow ] = BTcollect_statistics( temp_bound, ...
@@ -281,13 +281,6 @@ if (~isempty(info))
     info=orderfields(info);
 end
 
-end
-
-
-%update bounds tih tighter ones
-function bounds=update_bounds(bounds, bounds_temp)
-    bounds.min=max(bounds_temp.min,bounds.min);
-    bounds.max=min(bounds_temp.max,bounds.max);
 end
 
 

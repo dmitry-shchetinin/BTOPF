@@ -1,4 +1,4 @@
-function Env = BTfinal_flow_envelopes( bus, branch, theta )
+function Env = BTfinal_flow_envelopes( bus, branch, theta, use_Vsquared, Vdif )
 %returns matrix and bounds on vector that describe linear envelopes of all
 %nonlinear terms that enter power flow equations.
     
@@ -13,12 +13,20 @@ theta.max(ind_small_angles)=theta.max(ind_small_angles)+5e-8;
 
 %envelopes for V^2
 varbounds=struct('lb',Vmin,'ub',Vmax);
-[A1, b1]= BTenvelope_for_square(varbounds, N );
+if (use_Vsquared)
+    b1.l=[]; b1.u=[];
+else
+    [A1, b1]= BTenvelope_for_square(varbounds, N );
+end
 
 %envelopes for Vi*Vj
 indices=struct('x', ind_bus_F, 'y', ind_bus_T);
 dims=struct('nrows',L,'ncols',N);
-[ A2, b2 ] = BTenvelope_for_xy(indices, varbounds, dims);
+if (use_Vsquared)
+    [ A2, b2 ] = BTenvelope_for_sqrt_xy(indices, varbounds, Vdif, dims);
+else
+    [ A2, b2 ] = BTenvelope_for_xy(indices, varbounds, dims);
+end
 
 %envelopes for sin(theta_ij)
 indices=struct('theta_F', ind_bus_F, 'theta_T', ind_bus_T);
@@ -45,9 +53,15 @@ varbounds=struct('lb',[Vmin(ind_bus_F).*Vmin(ind_bus_T); cos(theta.min-shift)],.
 [A6, b6] = BTenvelope_for_xy(indices, varbounds, dims);
 
 %construct final envelope matrix and bounds on vector b
-A=[A1, sparse(N,N), speye(N), sparse(N,5*L); ...
-    A5*[A2, sparse(L,N); sparse(L,N), A3], sparse(L,N), A5, sparse(L,L), speye(L), sparse(L,L); ...
-    A6*[A2, sparse(L,N); sparse(L,N), A4], sparse(L,N), A6(:,1:L), sparse(L,L), A6(:,L+1:end), sparse(L,L), speye(L)];
+if (use_Vsquared)
+    A=[speye(N), sparse(N,N), sparse(N,5*L); ...
+        A5*[A2, sparse(L,N); sparse(L,N), A3], A5, sparse(L,L), speye(L), sparse(L,L); ...
+        A6*[A2, sparse(L,N); sparse(L,N), A4], A6(:,1:L), sparse(L,L), A6(:,L+1:end), sparse(L,L), speye(L)];
+else
+    A=[A1, sparse(N,N), speye(N), sparse(N,5*L); ...
+        A5*[A2, sparse(L,N); sparse(L,N), A3], sparse(L,N), A5, sparse(L,L), speye(L), sparse(L,L); ...
+        A6*[A2, sparse(L,N); sparse(L,N), A4], sparse(L,N), A6(:,1:L), sparse(L,L), A6(:,L+1:end), sparse(L,L), speye(L)];
+end
 
 %compute matrix A that includes information from envelopes and admittance matrix
 A=bus.A0*A;

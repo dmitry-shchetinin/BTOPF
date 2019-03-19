@@ -1,4 +1,4 @@
-function [ bounds, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, opt, tighten_angle )
+function [ bounds, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, opt, Vdif, tighten_angle )
 %Performs iterative bound tightening and returns bounds on either theta 
 %(if tighten_angle=1) or Vdif (if tighten_angle=0) for all branches. For 
 %Vdif, only one iteration makes sense because they do not affect convex 
@@ -26,9 +26,9 @@ iter=1;
 while iter<=max_iter
     %build all envelopes
     if (tighten_angle)
-        Env = BTfinal_flow_envelopes( bus, branch, bounds );
+        Env = BTfinal_flow_envelopes( bus, branch, bounds, opt.Vdif_type-1, Vdif );
     else
-        Env = BTfinal_flow_envelopes( bus, branch, theta );
+        Env = BTfinal_flow_envelopes( bus, branch, theta, opt.Vdif_type-1, Vdif );
     end
     
     %tighten bounds
@@ -45,8 +45,7 @@ while iter<=max_iter
     bounds_temp=bounds;
     
     %record tighter bounds
-    bounds.min=max(bounds.min,bounds_new.min);
-    bounds.max=min(bounds.max,bounds_new.max);
+    bounds=BTupdate_bounds(bounds, bounds_new);
     
     %collect iteration-specific statistics if needed
     if (opt.statistics==2)

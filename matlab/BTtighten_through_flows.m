@@ -116,7 +116,6 @@ end
 
 %put computed bounds into output structure
 bounds=struct('min',bound_min,'max',bound_max);
-       
 end
 
 
