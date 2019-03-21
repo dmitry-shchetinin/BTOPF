@@ -45,13 +45,7 @@ for i=1:L
         %% do postprocessing to obtain |Vi-Vj| constraints
         Vbox.V_i_min=Vbox.V_i_min*ratio;
         Vbox.V_i_max=Vbox.V_i_max*ratio;
-        if (extra.slope1(i)>=extra.slope2(i))
-            Vdif.max(i)=compute_bound_Vdif(extra.slope1(i), -extra.offset1(i), Vbox, Vdif.max(i));
-            Vdif.min(i)=compute_bound_Vdif(extra.slope2(i), extra.offset2(i), Vbox, Vdif.min(i));
-        else
-            Vdif.max(i)=compute_bound_Vdif(extra.slope2(i), -extra.offset2(i), Vbox, Vdif.max(i));
-            Vdif.min(i)=compute_bound_Vdif(extra.slope1(i), extra.offset1(i), Vbox, Vdif.min(i));
-         end
+        [Vdif.min(i), Vdif.max(i)]=compute_bound_Vdif(Vbox, Vdif_begin, Vdif_end);
     end
 end
 
@@ -70,29 +64,61 @@ end
 
 %% postprocess bounds (to store tightest bounds for all parallel branches)
 [ theta.min, theta.max ] = BTpostprocess_bounds( theta.min, theta.max, branch.uniq );
-[ Vdif.min, Vdif.max ] = BTpostprocess_bounds( Vdif.min, Vdif.max, branch.uniq );
-    
+[ Vdif.min, Vdif.max ] = BTpostprocess_bounds( Vdif.min, Vdif.max, branch.uniq );   
 end
 
 
 %% returns bound on |Vi-Vj| from Vj-slope*Vi=offset constraint
-function bound_out=compute_bound_Vdif(slope, offset, Vbox, bound_in)
-    %check if line intersects Vi=Vi_min edge
-    Vj_temp=slope*Vbox.V_i_min+offset;
-    if (Vj_temp>=Vbox.V_j_min && Vj_temp<=Vbox.V_j_max)
-        bound_out=Vbox.V_i_min-Vj_temp;
-        return;
-    end
-    
-    %check if line intersects Vj=Vj_min edge
-    Vi_temp=(Vbox.V_j_min-offset)/slope;
-    if (Vi_temp>=Vbox.V_i_min && Vi_temp<=Vbox.V_i_max)
-        bound_out=Vi_temp-Vbox.V_j_min;
-        return;
-    end
-    
-    %if line does not intersect with either, set bound to initial value
-    bound_out=bound_in;
+function [Vdif_min, Vdif_max]=compute_bound_Vdif(Vbox, Vdif_begin, Vdif_end)
+Vdifs_upper=zeros(4,1);
+Vdifs_lower=zeros(4,1);
+%Vdif resulting from intersections of lines at the beginning of the branch
+[Vdifs_upper(1),Vdifs_upper(2)]=compute_Vdif(Vbox, Vdif_begin.slope, -Vdif_begin.offset);
+[Vdifs_lower(1),Vdifs_lower(2)]=compute_Vdif(Vbox, Vdif_begin.slope, Vdif_begin.offset);
+%Vdif resulting from intersections of lines at the end of the branch
+[Vdifs_upper(3),Vdifs_upper(4)]=compute_Vdif(Vbox, Vdif_end.slope, -Vdif_end.offset);
+[Vdifs_lower(3),Vdifs_lower(4)]=compute_Vdif(Vbox, Vdif_end.slope, Vdif_end.offset);
+%compute maximum Vdif
+Vdifs_upper(Vdifs_upper==inf)=[];
+if (~isempty(Vdifs_upper))
+    Vdif_max=max(Vdifs_upper);
+else
+    Vdif_max=Vbox.V_i_max-Vbox.V_j_min;
+end
+%compute minimum Vdif
+Vdifs_lower(Vdifs_lower==inf)=[];
+if (~isempty(Vdifs_lower))
+    Vdif_min=min(Vdifs_lower);
+else
+    Vdif_min=Vbox.V_i_min-Vbox.V_j_max;
+end
 end
 
+
+function [Vdif_begin, Vdif_end]=compute_Vdif(Vbox, slope, offset)
+%check if this line has intersections with the box
+if ((slope*Vbox.V_i_min+offset>Vbox.V_j_max) || (slope*Vbox.V_i_max+offset<Vbox.V_j_min))
+    Vdif_begin=inf;
+    Vdif_end=inf;
+    return;
+end
+%record Vdif at the beginning of the line
+if (slope*Vbox.V_i_min+offset>=Vbox.V_j_min)
+    Vi=Vbox.V_i_min;
+    Vj=slope*Vi+offset;
+else
+    Vj=Vbox.V_j_min;
+    Vi=(Vj-offset)/slope;
+end
+Vdif_begin=Vi-Vj;
+%record Vdif at the end of the line
+if (slope*Vbox.V_i_max+offset<Vbox.V_j_max)
+    Vi=Vbox.V_i_max;
+    Vj=slope*Vi+offset;
+else
+    Vj=Vbox.V_j_max;
+    Vi=(Vj-offset)/slope;
+end
+Vdif_end=Vi-Vj;
+end
 

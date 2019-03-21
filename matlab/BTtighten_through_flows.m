@@ -3,9 +3,9 @@ function [ bounds ] = BTtighten_through_flows( bus, branch, Env, opt, tighten_an
 %theta (if tighten_angle=1) or Vdif (if tighten_angle=0) for all branches.
     
 %unpack data
-[ind_bus_F, ind_bus_T, L, N, opt_prob_flow, use_mex, ind_ref, load_PQ, ind_gen, linsolver]=...
+[ind_bus_F, ind_bus_T, L, N, opt_prob_flow, use_mex, ind_ref, load_PQ, ind_gen, linsolver, pow]=...
     deal(branch.ind_bus_F, branch.ind_bus_T, branch.nbranch, bus.nbus, opt.opt_prob_flow, ...
-    opt.use_mex, bus.ind_ref, bus.load_PQ, bus.ind_gen_PQ, opt.linsolver);
+    opt.use_mex, bus.ind_ref, bus.load_PQ, bus.ind_gen_PQ, opt.linsolver, opt.Vdif_type);
     
 %extract part of A related to slack variables (envelopes' wiggle room)
 A_rhs=-transpose(Env.A(:,2*N:end)); %we will only need transpose
@@ -29,8 +29,8 @@ if (~isempty(ind_temp)) %remove Qgen of a bus, whose reactive power balance was 
 end
 
 %record bounds on voltage magnitude at the beginning of each branch
-Vmin_busF=bus.Vmin(ind_bus_F);
-Vmax_busF=bus.Vmax(ind_bus_F);
+Vmin_busF=(bus.Vmin(ind_bus_F)).^pow;
+Vmax_busF=(bus.Vmax(ind_bus_F)).^pow;
 
 
 %initialize arrays for bounds

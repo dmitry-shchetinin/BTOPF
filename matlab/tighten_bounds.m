@@ -214,20 +214,20 @@ end
 
 
 
-% %% tighten Vdif bounds based on convex envelopes of power flows
-% if ((options.method==1 || options.method==3) && options.bounds~=1)
-%     temp_bound=Vdif;
-%     tic;
-%     [ Vdif_flow, ~ ] = BTbounds_from_flow_envelopes( bus, branch, options, 0 );
-%     time.Vdif=toc;
-%     %update bounds
-%     Vdif=update_bounds(Vdif, Vdif_flow);
-%     %collect detailed statistics if need be
-%     if (options.statistics==2)
-%         [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_bound, ...
-%             Vdif, branch.Vdif, 2, 1);
-%     end
-% end
+%% tighten Vdif bounds based on convex envelopes of power flows
+if ((options.method==1 || options.method==3) && options.bounds~=1)
+    temp_bound=Vdif;
+    tic;
+    [ Vdif_flow, ~ ] = BTbounds_from_flow_envelopes( bus, branch, options, Vdif, 0 );
+    time.Vdif=toc;
+    %update bounds
+    Vdif=BTupdate_bounds(Vdif, Vdif_flow);
+    %collect detailed statistics if need be
+    if (options.statistics==2)
+        [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_bound, ...
+            Vdif, branch.Vdif, 2, 1);
+    end
+end
 
 
 
