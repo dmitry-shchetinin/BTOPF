@@ -1,14 +1,21 @@
-function [ bounds, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, opt, Vdif, tighten_angle )
-%Performs iterative bound tightening and returns bounds on either theta 
-%(if tighten_angle=1) or Vdif (if tighten_angle=0) for all branches. For 
-%Vdif, only one iteration makes sense because they do not affect convex 
+function [ theta, Vdif, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, opt, Vdif_in, tighten_angle )
+%Performs iterative bound tightening and returns bounds on theta, Vdif, or 
+%both theta and Vdif for all branches. If squares of voltage magnitudes are
+%used, iterative tightening
+
+
+For Vdif, only one iteration makes sense because they do not affect convex 
 %envelopes.
    
-%record initial values of angle differences
+%record initial values of output parameters
 theta=branch.theta;
-stat_iter=[];
+Vdif=Vdif_in;
+stat_iter=struct('theta',[],'Vdif',[]);
 
 %adjust parameters depending on what type of bounds is tightened
+if (opt.
+
+
 if (tighten_angle)
     max_iter=opt.max_iter;
     eps_tol=opt.max_change;
@@ -26,9 +33,9 @@ iter=1;
 while iter<=max_iter
     %build all envelopes
     if (tighten_angle)
-        Env = BTfinal_flow_envelopes( bus, branch, bounds, opt.Vdif_type-1, Vdif );
+        Env = BTfinal_flow_envelopes( bus, branch, bounds, opt.Vdif_type-1, Vdif_in );
     else
-        Env = BTfinal_flow_envelopes( bus, branch, theta, opt.Vdif_type-1, Vdif );
+        Env = BTfinal_flow_envelopes( bus, branch, theta, opt.Vdif_type-1, Vdif_in );
     end
     
     %tighten bounds

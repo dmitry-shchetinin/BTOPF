@@ -181,7 +181,7 @@ end
 
 %% tighten bounds based on convex envelopes of bus injections
 if ((options.method==1 || options.method==4) && options.bounds~=2)
-    temp_bound=branch.theta;
+    temp_theta=branch.theta;
     tic;
     theta_inj = BTbounds_from_inj_envelopes( bus, branch, options );
     time.inj_env=toc;
@@ -189,43 +189,54 @@ if ((options.method==1 || options.method==4) && options.bounds~=2)
     branch.theta=BTupdate_bounds(branch.theta, theta_inj);
     %collect detailed statistics if need be
     if (options.statistics==2)
-        [ info.stat_theta_inj, info.viol_theta_inj ] = BTcollect_statistics( temp_bound, ...
+        [ info.stat_theta_inj, info.viol_theta_inj ] = BTcollect_statistics( temp_theta, ...
             branch.theta, branch.theta.val, 2, 1);
     end
 end
 
-
-
-%% tighten angle bounds based on convex envelopes of power flows
+%% tighten angle (and optionally Vdif) bounds based on convex envelopes of power flows
 if ((options.method==1 || options.method==3) && options.bounds~=2)
-    temp_bound=branch.theta;
+    temp_theta=branch.theta;
+    temp_Vdif=Vdif;
     tic;
-    [ theta_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, options, Vdif, 1 );
+    [ theta_flow, Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options );
     time.flow_env=toc;
     %update bounds
     branch.theta=BTupdate_bounds(branch.theta, theta_flow);
+    if (options.Vdif_type==2)
+        Vdif=BTupdate_bounds(Vdif, Vdif_flow);
+    end
     %collect detailed statistics if need be
     if (options.statistics==2)
-        [ info.stat_theta_flow, info.viol_theta_flow ] = BTcollect_statistics( temp_bound, ...
+        [ info.stat_theta_flow, info.viol_theta_flow ] = BTcollect_statistics( temp_theta, ...
             branch.theta, branch.theta.val, 2, 1);
-        info.stat_theta_flow_detailed=stat_iter;
+        info.stat_theta_flow_detailed=stat_iter.theta;
+        if (options.Vdif_type==2)
+            [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_Vdif, ...
+                Vdif, branch.Vdif, 2, 1);
+            info.stat_Vdif_flow_detailed=stat_iter.Vdif;
+        end
     end
 end
 
 
-
 %% tighten Vdif bounds based on convex envelopes of power flows
-if ((options.method==1 || options.method==3) && options.bounds~=1)
-    temp_bound=Vdif;
+if ((options.method==1 || options.method==3) && ...
+        ((options.bounds~=1 && options.Vdif_type==1) || ...
+        (options.bounds==2 && options.Vdif_type==2)))
+    temp_Vdif=Vdif;
     tic;
-    [ Vdif_flow, ~ ] = BTbounds_from_flow_envelopes( bus, branch, options, Vdif, 0 );
+    [ ~ , Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options );
     time.Vdif=toc;
     %update bounds
     Vdif=BTupdate_bounds(Vdif, Vdif_flow);
     %collect detailed statistics if need be
     if (options.statistics==2)
-        [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_bound, ...
+        [ info.stat_Vdif_flow, info.viol_Vdif_flow ] = BTcollect_statistics( temp_Vdif, ...
             Vdif, branch.Vdif, 2, 1);
+        if (options.Vdif_type==2)
+            info.stat_Vdif_flow_detailed=stat_iter.Vdif;
+        end
     end
 end
 
