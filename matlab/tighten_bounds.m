@@ -196,10 +196,11 @@ end
 
 %% tighten angle (and optionally Vdif) bounds based on convex envelopes of power flows
 if ((options.method==1 || options.method==3) && options.bounds~=2)
+    tighten_Vdif_only=0;
     temp_theta=branch.theta;
     temp_Vdif=Vdif;
     tic;
-    [ theta_flow, Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options );
+    [ theta_flow, Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options, tighten_Vdif_only );
     time.flow_env=toc;
     %update bounds
     branch.theta=BTupdate_bounds(branch.theta, theta_flow);
@@ -224,9 +225,10 @@ end
 if ((options.method==1 || options.method==3) && ...
         ((options.bounds~=1 && options.Vdif_type==1) || ...
         (options.bounds==2 && options.Vdif_type==2)))
+    tighten_Vdif_only=1;
     temp_Vdif=Vdif;
     tic;
-    [ ~ , Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options );
+    [ ~ , Vdif_flow, stat_iter ] = BTbounds_from_flow_envelopes( bus, branch, Vdif, options, tighten_Vdif_only );
     time.Vdif=toc;
     %update bounds
     Vdif=BTupdate_bounds(Vdif, Vdif_flow);

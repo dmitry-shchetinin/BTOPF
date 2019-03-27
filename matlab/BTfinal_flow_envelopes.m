@@ -1,4 +1,4 @@
-function Env = BTfinal_flow_envelopes( bus, branch, theta, use_Vsquared, Vdif )
+function Env = BTfinal_flow_envelopes( bus, branch, theta, Vdif, use_Vsquared )
 %returns matrix and bounds on vector that describe linear envelopes of all
 %nonlinear terms that enter power flow equations.
     
