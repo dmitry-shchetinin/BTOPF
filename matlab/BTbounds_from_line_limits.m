@@ -95,6 +95,7 @@ end
 end
 
 
+%% returns Vdif for given line at two intersection points with Vbox
 function [Vdif_begin, Vdif_end]=compute_Vdif(Vbox, slope, offset)
 %check if this line has intersections with the box
 if ((slope*Vbox.V_i_min+offset>Vbox.V_j_max) || (slope*Vbox.V_i_max+offset<Vbox.V_j_min))
