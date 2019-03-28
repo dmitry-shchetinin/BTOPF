@@ -54,12 +54,13 @@ Vdif.extra=extra;
 
 %% obtain differences of squares of voltage magnitudes if need be
 if (pow==2)
+    ind_Imax=branch.I_max>0;
     ind_temp=Vdif.min<0;
-    Vdif.min(ind_temp)=Vdif.min(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
-    Vdif.min(~ind_temp)=Vdif.min(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
+    Vdif.min(ind_temp & ind_Imax)=Vdif.min(ind_temp & ind_Imax).*(bus.Vmax(branch.ind_bus_F(ind_temp & ind_Imax))+bus.Vmax(branch.ind_bus_T(ind_temp & ind_Imax)));
+    Vdif.min(~ind_temp & ind_Imax)=Vdif.min(~ind_temp & ind_Imax).*(bus.Vmin(branch.ind_bus_F(~ind_temp & ind_Imax))+bus.Vmin(branch.ind_bus_T(~ind_temp & ind_Imax)));
     ind_temp=Vdif.max>=0;
-    Vdif.max(ind_temp)=Vdif.max(ind_temp).*(bus.Vmax(branch.ind_bus_F(ind_temp))+bus.Vmax(branch.ind_bus_T(ind_temp)));
-    Vdif.max(~ind_temp)=Vdif.max(~ind_temp).*(bus.Vmin(branch.ind_bus_F(~ind_temp))+bus.Vmin(branch.ind_bus_T(~ind_temp)));
+    Vdif.max(ind_temp & ind_Imax)=Vdif.max(ind_temp & ind_Imax).*(bus.Vmax(branch.ind_bus_F(ind_temp & ind_Imax))+bus.Vmax(branch.ind_bus_T(ind_temp & ind_Imax)));
+    Vdif.max(~ind_temp & ind_Imax)=Vdif.max(~ind_temp & ind_Imax).*(bus.Vmin(branch.ind_bus_F(~ind_temp & ind_Imax))+bus.Vmin(branch.ind_bus_T(~ind_temp & ind_Imax)));
 end
 
 %% postprocess bounds (to store tightest bounds for all parallel branches)
