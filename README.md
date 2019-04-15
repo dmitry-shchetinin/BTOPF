@@ -105,7 +105,7 @@ The detailed description of the algorithm's inputs and outputs can be found in f
 
 ## Related publications
 The detailed desciption of the bound tightening algorithm is given in the following publications:
-1.  Dmitry Shchetinin, Tomas Tinoco De Rubira, Gabriela Hug
+1.  Dmitry Shchetinin, Tomas Tinoco De Rubira, Gabriela Hug,
     ["Efficient Bound Tightening Techniques for Convex Relaxations of AC Optimal Power Flow,"](https://ieeexplore.ieee.org/document/8667386) *IEEE
     Transactions on Power Systems*, 2019.  
     DOI: [10.1109/TPWRS.2019.2905232](https://doi.org/10.1109/TPWRS.2019.2905232).
