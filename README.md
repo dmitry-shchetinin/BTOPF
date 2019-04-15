@@ -103,6 +103,21 @@ The detailed description of the algorithm's inputs and outputs can be found in f
 
 - - - -
 
+## Related publications
+The detailed desciption of the bound tightening algorithm is given in the following publications:
+1.  Dmitry Shchetinin, Tomas Tinoco De Rubira, Gabriela Hug
+    ["Efficient Bound Tightening Techniques for Convex Relaxations of AC Optimal Power Flow,"][https://ieeexplore.ieee.org/document/8667386] *IEEE
+    Transactions on Power Systems*, 2019.  
+    DOI: [10.1109/TPWRS.2019.2905232][https://doi.org/10.1109/TPWRS.2019.2905232].
+
+2.  Dmitry Shchetinin, 
+    ["Optimization of Power System Operation: Approximations, Relaxations, and Decomposition,"][https://www.research-collection.ethz.ch/handle/20.500.11850/317137] *Doctoral Thesis*, Zurich, ETH Zurich, 2018.
+    DOI: [DOI: 10.3929/ethz-b-000317137][https://doi.org/10.3929/ethz-b-000317137].
+
+Please refer to these publications if you use BTOPF in your work.
+
+- - - -
+
 ## Example usage
 Coming soon
 
