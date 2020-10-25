@@ -42,7 +42,7 @@ opt=add_field(opt,'use_mex', 0);
 if (opt.use_mex~=0 && opt.use_mex~=1)
     warning('Value of field "use_mex" must be 0 or 1. Changing it to default value of 0.')
     opt.use_mex=1;
-elseif (opt.use_mex==1 && exist('fast_LP_with_constraint','file')~=3)
+elseif (opt.use_mex==1 && exist('greedy_LP_solution_mex','file')~=3)
     warning('Required mex files were not found. Changing "use_mex" to default value of 1.')
     opt.use_mex=1;
 end

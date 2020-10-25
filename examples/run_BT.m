@@ -2,7 +2,7 @@
 clear;
 
 %load test case
-casename='case3120sp'; %case24_ieee_rts, case300, case1354pegase, case2383wp, case3120sp
+casename='case24_ieee_rts'; %case24_ieee_rts, case300, case1354pegase, case2383wp, case3120sp
 mpc=loadcase(casename);
 
 %set some options to non-default values
